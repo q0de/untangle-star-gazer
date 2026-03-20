@@ -24,9 +24,37 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ── Phone Frame (constrains to mobile on desktop) ──────────────── */
+.phone-frame {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+@media (min-width: 500px) {
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .phone-frame {
+    position: relative;
+    max-height: 90vh;
+    aspect-ratio: 9 / 19.5;
+    max-width: min(420px, 45vh);
+    border-radius: 36px;
+    box-shadow:
+      0 0 0 3px rgba(255,255,255,0.06),
+      0 20px 60px rgba(0,0,0,0.5);
+  }
+}
+
 /* ── Full-screen background ─────────────────────────────────────── */
 .game-bg {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
 }
@@ -126,7 +154,7 @@ html, body {
 
 /* ── Screens (full viewport, stacked) ───────────────────────────── */
 .screen {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 1;
   display: flex;
