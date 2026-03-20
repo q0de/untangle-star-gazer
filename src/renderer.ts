@@ -137,86 +137,102 @@ function drawNodesStaggered(ctx: CanvasRenderingContext2D, state: RenderState) {
   });
 }
 
-// ── SVG-style 3-ring orb node (btn-star-power design) ──────────────
-// Derives 3 shades from the node color: dark outer, mid ring, bright inner
+// ── Shimmering star node with chromatic aberration ──────────────────
+// Each node: outer color halo with CA fringe → soft glow → bright white-hot core
 
-function darken(hex: string, amount: number): string {
-  const r = Math.max(0, parseInt(hex.slice(1, 3), 16) - amount);
-  const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - amount);
-  const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - amount);
-  return `rgb(${r},${g},${b})`;
-}
-
-function lighten(hex: string, amount: number): string {
-  const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + amount);
-  const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + amount);
-  const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + amount);
-  return `rgb(${r},${g},${b})`;
+function parseHex(hex: string): [number, number, number] {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
 }
 
 function drawSingleNode(ctx: CanvasRenderingContext2D, state: RenderState, node: GameNode, idx: number) {
   const { dragIdx, winState, time } = state;
   const isDragging = idx === dragIdx;
+
+  // Shimmer: each node twinkles at its own phase
+  const shimmer = 0.85 + 0.15 * Math.sin(time * 0.004 + idx * 2.1);
   const breathe = isDragging ? 0 : Math.sin(time * 0.003 + idx * 1.2) * 1.5;
   const r = (isDragging ? NODE_DRAG_RADIUS : NODE_RADIUS) + breathe;
 
   const baseColor = winState ? '#4caf50' : node.color;
-  const outerColor = darken(baseColor, 120); // dark rim
-  const midColor = darken(baseColor, 40);    // mid ring
-  const innerColor = baseColor;               // bright inner
+  const [cr, cg, cb] = parseHex(baseColor);
 
-  // Outer shadow/glow
-  ctx.shadowColor = hex2rgba(baseColor, isDragging ? 0.6 : 0.3);
-  ctx.shadowBlur = isDragging ? 16 : 8;
+  // ── Layer 1: Chromatic aberration fringe ──
+  // Draw 2 offset halos in shifted colors (red-shift right, blue-shift left)
+  const caOffset = isDragging ? 3 : 2;
+  const caRadius = r + 8;
 
-  // Ring 1: Dark outer rim
+  // Red-shifted halo (offset right)
+  const redGrad = ctx.createRadialGradient(
+    node.x + caOffset, node.y, r * 0.3,
+    node.x + caOffset, node.y, caRadius,
+  );
+  redGrad.addColorStop(0, `rgba(${Math.min(255, cr + 80)},${Math.max(0, cg - 40)},${Math.max(0, cb - 40)},${0.2 * shimmer})`);
+  redGrad.addColorStop(1, 'transparent');
+  ctx.beginPath();
+  ctx.arc(node.x + caOffset, node.y, caRadius, 0, Math.PI * 2);
+  ctx.fillStyle = redGrad;
+  ctx.fill();
+
+  // Blue-shifted halo (offset left)
+  const blueGrad = ctx.createRadialGradient(
+    node.x - caOffset, node.y, r * 0.3,
+    node.x - caOffset, node.y, caRadius,
+  );
+  blueGrad.addColorStop(0, `rgba(${Math.max(0, cr - 40)},${Math.max(0, cg - 20)},${Math.min(255, cb + 80)},${0.2 * shimmer})`);
+  blueGrad.addColorStop(1, 'transparent');
+  ctx.beginPath();
+  ctx.arc(node.x - caOffset, node.y, caRadius, 0, Math.PI * 2);
+  ctx.fillStyle = blueGrad;
+  ctx.fill();
+
+  // ── Layer 2: Soft color glow (the "atmosphere") ──
+  const glowR = r + 14;
+  const glow = ctx.createRadialGradient(node.x, node.y, r * 0.4, node.x, node.y, glowR);
+  glow.addColorStop(0, `rgba(${cr},${cg},${cb},${0.4 * shimmer})`);
+  glow.addColorStop(0.5, `rgba(${cr},${cg},${cb},${0.12 * shimmer})`);
+  glow.addColorStop(1, 'transparent');
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
+  ctx.fillStyle = glow;
+  ctx.fill();
+
+  // ── Layer 3: Core orb (white-hot center → node color edge) ──
+  const core = ctx.createRadialGradient(
+    node.x, node.y, 0,
+    node.x, node.y, r,
+  );
+  core.addColorStop(0, `rgba(255,255,255,${0.95 * shimmer})`);
+  core.addColorStop(0.3, `rgba(${Math.min(255, cr + 60)},${Math.min(255, cg + 60)},${Math.min(255, cb + 60)},${0.9 * shimmer})`);
+  core.addColorStop(0.7, `rgba(${cr},${cg},${cb},${0.8 * shimmer})`);
+  core.addColorStop(1, `rgba(${cr},${cg},${cb},0.3)`);
   ctx.beginPath();
   ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-  ctx.fillStyle = outerColor;
+  ctx.fillStyle = core;
   ctx.fill();
 
-  ctx.shadowBlur = 0;
-
-  // Ring 2: Mid ring (slightly smaller, offset up 1px like SVG)
-  const midR = r * 0.905;
-  ctx.beginPath();
-  ctx.arc(node.x, node.y - 1, midR, 0, Math.PI * 2);
-  ctx.fillStyle = midColor;
-  ctx.fill();
-
-  // Ring 3: Bright inner fill with gradient for depth
-  const innerR = midR * 0.95;
-  const grad = ctx.createRadialGradient(
-    node.x, node.y - innerR * 0.3, innerR * 0.1,
-    node.x, node.y - 1, innerR,
+  // ── Layer 4: Specular highlight (top-left) ──
+  const spec = ctx.createRadialGradient(
+    node.x - r * 0.2, node.y - r * 0.25, 0,
+    node.x - r * 0.2, node.y - r * 0.25, r * 0.6,
   );
-  grad.addColorStop(0, lighten(baseColor, 40));
-  grad.addColorStop(0.7, innerColor);
-  grad.addColorStop(1, midColor);
+  spec.addColorStop(0, `rgba(255,255,255,${0.5 * shimmer})`);
+  spec.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.beginPath();
-  ctx.arc(node.x, node.y - 1, innerR, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
+  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = spec;
   ctx.fill();
 
-  // Highlight spot (top)
-  const hlGrad = ctx.createRadialGradient(
-    node.x, node.y - innerR * 0.4, 0,
-    node.x, node.y - innerR * 0.4, innerR * 0.5,
-  );
-  hlGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
-  hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.beginPath();
-  ctx.arc(node.x, node.y - 1, innerR, 0, Math.PI * 2);
-  ctx.fillStyle = hlGrad;
-  ctx.fill();
-
-  // Label
+  // ── Label ──
   ctx.fillStyle = '#fff';
   ctx.font = `bold 9px "Montserrat",sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.shadowBlur = 4;
+  ctx.shadowColor = `rgba(${cr},${cg},${cb},0.8)`;
+  ctx.shadowBlur = 6;
 
   const lines = node.label.split('\n');
   const lineHeight = 10;
