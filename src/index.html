@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Untangle – See the pATTRns</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <!-- Full-screen cosmic background + starman blended together -->
+  <div class="game-bg">
+    <img src="/bg.png" alt="" class="bg-img" />
+    <div class="twinkle-layer twinkle-layer--a"></div>
+    <div class="twinkle-layer twinkle-layer--b"></div>
+    <div class="twinkle-layer twinkle-layer--c"></div>
+    <img src="/starman.png" alt="" class="bg-starman bg-starman-static" id="bg-starman-static" />
+    <video class="bg-starman bg-starman-video" id="bg-starman-video" muted playsinline preload="auto"></video>
+  </div>
+
+  <!-- ═══ SCREEN: MENU ═══ -->
+  <section id="screen-menu" class="screen active menu-screen">
+    <div class="menu-overlay"></div>
+    <div class="menu-noise" id="menu-noise"></div>
+    <div class="screen-inner menu-layout">
+      <div class="menu-top">
+        <div class="brand-logo brand-logo--lg">
+          <span class="logo-see">SEE THE </span><span class="logo-pink">PATTR</span><span class="logo-see">NS</span>
+        </div>
+        <p class="menu-tagline">Untangle the Diagnosis</p>
+      </div>
+      <div class="menu-bottom">
+        <button id="btn-play" class="btn-primary btn-glow">
+          PLAY
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SCREEN: INTRO ═══ -->
+  <section id="screen-intro" class="screen">
+    <div class="screen-inner intro-layout">
+      <div class="intro-avatar">
+        <img src="/dr.png" alt="Doctor" class="avatar-img" />
+      </div>
+      <div class="intro-speech">
+        <div class="speech-bubble">
+          <p id="typewriter-line1" class="tw-line"></p>
+          <p id="typewriter-line2" class="tw-line"></p>
+          <p id="typewriter-line3" class="tw-line"></p>
+        </div>
+      </div>
+      <button id="btn-skip-intro" class="btn-ghost intro-skip">Continue &rsaquo;</button>
+    </div>
+  </section>
+
+  <!-- ═══ SCREEN: GAMEPLAY ═══ -->
+  <section id="screen-gameplay" class="screen">
+    <div class="screen-inner gameplay-layout" id="gameplay-content">
+
+      <!-- HUD top -->
+      <div class="hud-top">
+        <div class="brand-logo brand-logo--sm">
+          <span class="logo-see">SEE THE </span><span class="logo-pink">PATTR</span><span class="logo-see">NS</span>
+        </div>
+        <div class="timer-row">
+          <div class="timer-bar-track">
+            <div id="timer-bar" class="timer-bar-fill"></div>
+          </div>
+          <span id="timer-seconds" class="timer-num">30</span><span class="timer-s">s</span>
+        </div>
+      </div>
+
+      <!-- Full-screen canvas area -->
+      <div class="canvas-area" id="canvas-area">
+        <canvas id="game-canvas"></canvas>
+      </div>
+
+      <!-- HUD bottom -->
+      <div class="hud-bottom">
+        <div class="crossings-pill">
+          <span class="crossings-label">CROSSINGS</span>
+          <span id="crossings-count" class="crossings-num">—</span>
+        </div>
+        <button id="btn-reshuffle" class="btn-ghost">Reshuffle</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ SCREEN: SUMMARY ═══ -->
+  <section id="screen-summary" class="screen">
+    <div class="screen-inner summary-layout">
+      <div class="brand-logo brand-logo--sm">
+        <span class="logo-see">SEE THE </span><span class="logo-pink">PATTR</span><span class="logo-see">NS</span>
+      </div>
+
+      <h2 id="summary-headline" class="summary-headline"></h2>
+      <p id="summary-stat" class="summary-stat"></p>
+
+      <div id="summary-callout" class="callout-card"></div>
+
+      <a id="cta-button" class="btn-primary btn-glow btn-cta" href="https://www.seethepattrns.com" target="_blank" rel="noopener">
+        See the pATTRns&nbsp;&rsaquo;
+      </a>
+      <button id="btn-replay" class="btn-ghost">Play Again</button>
+    </div>
+  </section>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

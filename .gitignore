@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+ASSETS_EXTRACTED/
+PLAYABLE_AD/
+*.zip
+company-agent-skills/
+game-juice/
+*.gif
