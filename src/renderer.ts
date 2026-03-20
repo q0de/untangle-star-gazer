@@ -104,20 +104,20 @@ function drawEdges(ctx: CanvasRenderingContext2D, state: RenderState) {
     ctx.lineTo(nb.x, nb.y);
 
     if (winState) {
-      ctx.strokeStyle = 'rgba(255,215,64,0.88)';
-      ctx.lineWidth = 3;
-      ctx.shadowColor = 'rgba(255,215,64,0.6)';
-      ctx.shadowBlur = 12;
+      ctx.strokeStyle = 'rgba(255,215,64,0.95)';
+      ctx.lineWidth = 3.5;
+      ctx.shadowColor = 'rgba(255,215,64,0.7)';
+      ctx.shadowBlur = 16;
     } else if (isCrossing) {
-      ctx.strokeStyle = 'rgba(255,80,80,0.75)';
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = 'rgba(255,80,80,0.4)';
-      ctx.shadowBlur = 6;
+      ctx.strokeStyle = 'rgba(255,70,70,0.9)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = 'rgba(255,70,70,0.6)';
+      ctx.shadowBlur = 10;
     } else {
-      ctx.strokeStyle = 'rgba(0,188,212,0.55)';
-      ctx.lineWidth = 2;
-      ctx.shadowColor = 'rgba(0,188,212,0.3)';
-      ctx.shadowBlur = 5;
+      ctx.strokeStyle = 'rgba(0,220,255,0.75)';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = 'rgba(0,220,255,0.5)';
+      ctx.shadowBlur = 8;
     }
 
     ctx.stroke();
@@ -227,18 +227,32 @@ function drawSingleNode(ctx: CanvasRenderingContext2D, state: RenderState, node:
   ctx.fill();
 
   // ── Label ──
-  ctx.fillStyle = '#fff';
-  ctx.font = `bold 9px "Montserrat",sans-serif`;
+  ctx.font = `bold 11px "Montserrat",sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = `rgba(${cr},${cg},${cb},0.8)`;
-  ctx.shadowBlur = 6;
 
   const lines = node.label.split('\n');
-  const lineHeight = 10;
+  const lineHeight = 12;
   const startY = node.y - ((lines.length - 1) * lineHeight) / 2;
+
+  // Dark drop shadow for readability
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 6;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 1;
   lines.forEach((line, i) => {
-    ctx.fillText(line, node.x, startY + i * lineHeight, r * 2 - 6);
+    ctx.fillText(line, node.x, startY + i * lineHeight, r * 2);
+  });
+
+  // White text on top with color glow
+  ctx.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.fillStyle = '#fff';
+  lines.forEach((line, i) => {
+    ctx.fillText(line, node.x, startY + i * lineHeight, r * 2);
   });
   ctx.shadowBlur = 0;
 }
