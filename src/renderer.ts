@@ -93,36 +93,61 @@ export function render(ctx: CanvasRenderingContext2D, state: RenderState) {
 
 function drawEdges(ctx: CanvasRenderingContext2D, state: RenderState) {
   const { nodes, edges, crossingSet, winState } = state;
+  ctx.lineCap = 'round';
 
   edges.forEach((edge, idx) => {
     const na = nodes[edge[0]];
     const nb = nodes[edge[1]];
     const isCrossing = crossingSet.has(idx);
 
+    // Color config: bloom → mid glow → white-hot core
+    let bloom: string, mid: string, core: string;
+    if (winState) {
+      bloom = 'rgba(255,215,64,0.15)';
+      mid   = 'rgba(255,230,120,0.5)';
+      core  = 'rgba(255,255,240,0.95)';
+    } else if (isCrossing) {
+      bloom = 'rgba(255,70,70,0.18)';
+      mid   = 'rgba(255,120,100,0.5)';
+      core  = 'rgba(255,220,210,0.9)';
+    } else {
+      bloom = 'rgba(0,180,255,0.12)';
+      mid   = 'rgba(100,220,255,0.45)';
+      core  = 'rgba(230,250,255,0.9)';
+    }
+
+    // Pass 1: Wide soft bloom
     ctx.beginPath();
     ctx.moveTo(na.x, na.y);
     ctx.lineTo(nb.x, nb.y);
-
-    if (winState) {
-      ctx.strokeStyle = 'rgba(255,215,64,0.95)';
-      ctx.lineWidth = 3.5;
-      ctx.shadowColor = 'rgba(255,215,64,0.7)';
-      ctx.shadowBlur = 16;
-    } else if (isCrossing) {
-      ctx.strokeStyle = 'rgba(255,70,70,0.9)';
-      ctx.lineWidth = 3;
-      ctx.shadowColor = 'rgba(255,70,70,0.6)';
-      ctx.shadowBlur = 10;
-    } else {
-      ctx.strokeStyle = 'rgba(0,220,255,0.75)';
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = 'rgba(0,220,255,0.5)';
-      ctx.shadowBlur = 8;
-    }
-
+    ctx.strokeStyle = bloom;
+    ctx.lineWidth = 10;
+    ctx.shadowColor = bloom;
+    ctx.shadowBlur = 14;
     ctx.stroke();
     ctx.shadowBlur = 0;
+
+    // Pass 2: Medium glow
+    ctx.beginPath();
+    ctx.moveTo(na.x, na.y);
+    ctx.lineTo(nb.x, nb.y);
+    ctx.strokeStyle = mid;
+    ctx.lineWidth = 4;
+    ctx.shadowColor = mid;
+    ctx.shadowBlur = 6;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Pass 3: Bright white-hot core
+    ctx.beginPath();
+    ctx.moveTo(na.x, na.y);
+    ctx.lineTo(nb.x, nb.y);
+    ctx.strokeStyle = core;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   });
+
+  ctx.lineCap = 'butt';
 }
 
 // ── Nodes (staggered entrance) ─────────────────────────────────────
