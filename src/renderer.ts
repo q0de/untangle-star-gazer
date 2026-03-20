@@ -198,44 +198,41 @@ function drawSingleNode(ctx: CanvasRenderingContext2D, state: RenderState, node:
   blg.addColorStop(1, 'transparent');
   ctx.beginPath(); ctx.arc(node.x - caOff, node.y, r + 10, 0, Math.PI * 2); ctx.fillStyle = blg; ctx.fill();
 
-  // ── Soft color glow ──
-  const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, r + 12);
-  glow.addColorStop(0, `rgba(${cr},${cg},${cb},${0.3 * shimmer})`);
-  glow.addColorStop(0.5, `rgba(${cr},${cg},${cb},0.06)`);
+  // ── Soft color glow (bigger) ──
+  const glowR = r + 18;
+  const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowR);
+  glow.addColorStop(0, `rgba(${cr},${cg},${cb},${0.35 * shimmer})`);
+  glow.addColorStop(0.4, `rgba(${cr},${cg},${cb},0.1)`);
   glow.addColorStop(1, 'transparent');
-  ctx.beginPath(); ctx.arc(node.x, node.y, r + 12, 0, Math.PI * 2); ctx.fillStyle = glow; ctx.fill();
+  ctx.beginPath(); ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2); ctx.fillStyle = glow; ctx.fill();
 
-  // ── Lens flare spikes (4 rays, slowly rotating) ──
+  // ── Amorphous rotating blobs (soft organic shapes around the core) ──
   ctx.save();
   ctx.translate(node.x, node.y);
   ctx.rotate(rot);
-  ctx.lineCap = 'round';
 
-  const spikeLen = r * 1.6;
-  for (let i = 0; i < 4; i++) {
-    const angle = (i * Math.PI) / 4;
-    const ax = Math.cos(angle) * spikeLen;
-    const ay = Math.sin(angle) * spikeLen;
+  // Draw 3 soft elliptical blobs at different angles, slowly drifting
+  for (let i = 0; i < 3; i++) {
+    const bAngle = (i * Math.PI * 2) / 3 + Math.sin(time * 0.001 + idx + i) * 0.3;
+    const bDist = r * 0.3;
+    const bx = Math.cos(bAngle) * bDist;
+    const by = Math.sin(bAngle) * bDist;
+    const bSize = r * (0.7 + 0.15 * Math.sin(time * 0.002 + i * 2));
 
-    // Colored glow pass
-    ctx.beginPath(); ctx.moveTo(-ax, -ay); ctx.lineTo(ax, ay);
-    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${0.12 * shimmer})`;
-    ctx.lineWidth = 5;
-    ctx.shadowColor = `rgba(${cr},${cg},${cb},0.25)`;
-    ctx.shadowBlur = 6;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // White core pass
-    ctx.beginPath(); ctx.moveTo(-ax, -ay); ctx.lineTo(ax, ay);
-    ctx.strokeStyle = `rgba(255,255,255,${0.35 * shimmer})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    const blob = ctx.createRadialGradient(bx, by, 0, bx, by, bSize);
+    blob.addColorStop(0, `rgba(255,255,255,${0.18 * shimmer})`);
+    blob.addColorStop(0.4, `rgba(${cr},${cg},${cb},${0.08 * shimmer})`);
+    blob.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.ellipse(bx, by, bSize, bSize * 0.6, bAngle, 0, Math.PI * 2);
+    ctx.fillStyle = blob;
+    ctx.fill();
   }
+
   ctx.restore();
 
-  // ── Bright core point ──
-  const coreR = r * 0.3;
+  // ── Bright core ──
+  const coreR = r * 0.45;
   const coreGrad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, coreR);
   coreGrad.addColorStop(0, `rgba(255,255,255,${0.95 * shimmer})`);
   coreGrad.addColorStop(0.5, `rgba(${Math.min(255, cr + 80)},${Math.min(255, cg + 80)},${Math.min(255, cb + 80)},0.6)`);

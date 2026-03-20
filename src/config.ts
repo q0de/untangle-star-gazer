@@ -52,9 +52,9 @@ export const DEFAULT_CONFIG: PuzzleConfig = {
 };
 
 // ── Visual constants ───────────────────────────────────────────────
-export const NODE_RADIUS = 24;
-export const NODE_HIT_RADIUS = 34;
-export const NODE_DRAG_RADIUS = 27;
+export const NODE_RADIUS = 30;
+export const NODE_HIT_RADIUS = 40;
+export const NODE_DRAG_RADIUS = 34;
 
 // ── Solved body-mapped positions (normalized 0–1, scaled to canvas at runtime) ──
 // Calibrated to starman_black.png at: left:-75, top:16, 525x783 on 375x812 viewport
@@ -72,11 +72,11 @@ export function generateTangledPositions(config: PuzzleConfig): { x: number; y: 
   const { canvasWidth: w, canvasHeight: h } = config;
   const count = config.nodes.length;
 
-  // Safe play area: inset from HUD top (~100px) and HUD bottom (~100px), sides (~40px)
-  const safeTop = h * 0.14;
-  const safeBottom = h * 0.86;
-  const safeLeft = w * 0.1;
-  const safeRight = w * 0.9;
+  // Safe play area: constrained to the starman body area
+  const safeTop = h * 0.18;
+  const safeBottom = h * 0.78;
+  const safeLeft = w * 0.18;
+  const safeRight = w * 0.82;
 
   const safeW = safeRight - safeLeft;
   const safeH = safeBottom - safeTop;
