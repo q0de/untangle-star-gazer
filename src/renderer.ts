@@ -176,108 +176,92 @@ function parseHex(hex: string): [number, number, number] {
 function drawSingleNode(ctx: CanvasRenderingContext2D, state: RenderState, node: GameNode, idx: number) {
   const { dragIdx, winState, time } = state;
   const isDragging = idx === dragIdx;
-
-  // Shimmer: each node twinkles at its own phase
-  const shimmer = 0.85 + 0.15 * Math.sin(time * 0.004 + idx * 2.1);
-  const breathe = isDragging ? 0 : Math.sin(time * 0.003 + idx * 1.2) * 1.5;
-  const r = (isDragging ? NODE_DRAG_RADIUS : NODE_RADIUS) + breathe;
+  const r = isDragging ? NODE_DRAG_RADIUS : NODE_RADIUS;
 
   const baseColor = winState ? '#4caf50' : node.color;
   const [cr, cg, cb] = parseHex(baseColor);
 
-  // ── Layer 1: Chromatic aberration fringe ──
-  // Draw 2 offset halos in shifted colors (red-shift right, blue-shift left)
-  const caOffset = isDragging ? 3 : 2;
-  const caRadius = r + 8;
+  // Slowly rotating angle for spikes
+  const rot = time * 0.0004 + idx * 1.0;
+  const shimmer = 0.9 + 0.1 * Math.sin(time * 0.003 + idx * 2.1);
 
-  // Red-shifted halo (offset right)
-  const redGrad = ctx.createRadialGradient(
-    node.x + caOffset, node.y, r * 0.3,
-    node.x + caOffset, node.y, caRadius,
-  );
-  redGrad.addColorStop(0, `rgba(${Math.min(255, cr + 80)},${Math.max(0, cg - 40)},${Math.max(0, cb - 40)},${0.2 * shimmer})`);
-  redGrad.addColorStop(1, 'transparent');
-  ctx.beginPath();
-  ctx.arc(node.x + caOffset, node.y, caRadius, 0, Math.PI * 2);
-  ctx.fillStyle = redGrad;
-  ctx.fill();
+  // ── Chromatic aberration halo ──
+  const caOff = isDragging ? 3 : 2;
+  // Red-shifted
+  const rg = ctx.createRadialGradient(node.x + caOff, node.y, 0, node.x + caOff, node.y, r + 10);
+  rg.addColorStop(0, `rgba(${Math.min(255, cr + 60)},${Math.max(0, cg - 30)},${Math.max(0, cb - 30)},${0.2 * shimmer})`);
+  rg.addColorStop(1, 'transparent');
+  ctx.beginPath(); ctx.arc(node.x + caOff, node.y, r + 10, 0, Math.PI * 2); ctx.fillStyle = rg; ctx.fill();
+  // Blue-shifted
+  const blg = ctx.createRadialGradient(node.x - caOff, node.y, 0, node.x - caOff, node.y, r + 10);
+  blg.addColorStop(0, `rgba(${Math.max(0, cr - 30)},${Math.max(0, cg - 15)},${Math.min(255, cb + 60)},${0.2 * shimmer})`);
+  blg.addColorStop(1, 'transparent');
+  ctx.beginPath(); ctx.arc(node.x - caOff, node.y, r + 10, 0, Math.PI * 2); ctx.fillStyle = blg; ctx.fill();
 
-  // Blue-shifted halo (offset left)
-  const blueGrad = ctx.createRadialGradient(
-    node.x - caOffset, node.y, r * 0.3,
-    node.x - caOffset, node.y, caRadius,
-  );
-  blueGrad.addColorStop(0, `rgba(${Math.max(0, cr - 40)},${Math.max(0, cg - 20)},${Math.min(255, cb + 80)},${0.2 * shimmer})`);
-  blueGrad.addColorStop(1, 'transparent');
-  ctx.beginPath();
-  ctx.arc(node.x - caOffset, node.y, caRadius, 0, Math.PI * 2);
-  ctx.fillStyle = blueGrad;
-  ctx.fill();
-
-  // ── Layer 2: Soft color glow (the "atmosphere") ──
-  const glowR = r + 14;
-  const glow = ctx.createRadialGradient(node.x, node.y, r * 0.4, node.x, node.y, glowR);
-  glow.addColorStop(0, `rgba(${cr},${cg},${cb},${0.4 * shimmer})`);
-  glow.addColorStop(0.5, `rgba(${cr},${cg},${cb},${0.12 * shimmer})`);
+  // ── Soft color glow ──
+  const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, r + 12);
+  glow.addColorStop(0, `rgba(${cr},${cg},${cb},${0.3 * shimmer})`);
+  glow.addColorStop(0.5, `rgba(${cr},${cg},${cb},0.06)`);
   glow.addColorStop(1, 'transparent');
-  ctx.beginPath();
-  ctx.arc(node.x, node.y, glowR, 0, Math.PI * 2);
-  ctx.fillStyle = glow;
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(node.x, node.y, r + 12, 0, Math.PI * 2); ctx.fillStyle = glow; ctx.fill();
 
-  // ── Layer 3: Core orb (white-hot center → node color edge) ──
-  const core = ctx.createRadialGradient(
-    node.x, node.y, 0,
-    node.x, node.y, r,
-  );
-  core.addColorStop(0, `rgba(255,255,255,${0.95 * shimmer})`);
-  core.addColorStop(0.3, `rgba(${Math.min(255, cr + 60)},${Math.min(255, cg + 60)},${Math.min(255, cb + 60)},${0.9 * shimmer})`);
-  core.addColorStop(0.7, `rgba(${cr},${cg},${cb},${0.8 * shimmer})`);
-  core.addColorStop(1, `rgba(${cr},${cg},${cb},0.3)`);
-  ctx.beginPath();
-  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-  ctx.fillStyle = core;
-  ctx.fill();
+  // ── Lens flare spikes (4 rays, slowly rotating) ──
+  ctx.save();
+  ctx.translate(node.x, node.y);
+  ctx.rotate(rot);
+  ctx.lineCap = 'round';
 
-  // ── Layer 4: Specular highlight (top-left) ──
-  const spec = ctx.createRadialGradient(
-    node.x - r * 0.2, node.y - r * 0.25, 0,
-    node.x - r * 0.2, node.y - r * 0.25, r * 0.6,
-  );
-  spec.addColorStop(0, `rgba(255,255,255,${0.5 * shimmer})`);
-  spec.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.beginPath();
-  ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-  ctx.fillStyle = spec;
-  ctx.fill();
+  const spikeLen = r * 1.6;
+  for (let i = 0; i < 4; i++) {
+    const angle = (i * Math.PI) / 4;
+    const ax = Math.cos(angle) * spikeLen;
+    const ay = Math.sin(angle) * spikeLen;
 
-  // ── Label ──
+    // Colored glow pass
+    ctx.beginPath(); ctx.moveTo(-ax, -ay); ctx.lineTo(ax, ay);
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${0.12 * shimmer})`;
+    ctx.lineWidth = 5;
+    ctx.shadowColor = `rgba(${cr},${cg},${cb},0.25)`;
+    ctx.shadowBlur = 6;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // White core pass
+    ctx.beginPath(); ctx.moveTo(-ax, -ay); ctx.lineTo(ax, ay);
+    ctx.strokeStyle = `rgba(255,255,255,${0.35 * shimmer})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // ── Bright core point ──
+  const coreR = r * 0.3;
+  const coreGrad = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, coreR);
+  coreGrad.addColorStop(0, `rgba(255,255,255,${0.95 * shimmer})`);
+  coreGrad.addColorStop(0.5, `rgba(${Math.min(255, cr + 80)},${Math.min(255, cg + 80)},${Math.min(255, cb + 80)},0.6)`);
+  coreGrad.addColorStop(1, 'transparent');
+  ctx.beginPath(); ctx.arc(node.x, node.y, coreR, 0, Math.PI * 2); ctx.fillStyle = coreGrad; ctx.fill();
+
+  // ── Label (below the star) ──
   ctx.font = `bold 11px "Montserrat",sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   const lines = node.label.split('\n');
   const lineHeight = 12;
-  const startY = node.y - ((lines.length - 1) * lineHeight) / 2;
+  const labelY = node.y + r * 0.5 + 10;
 
-  // Dark drop shadow for readability
   ctx.fillStyle = 'rgba(0,0,0,0.7)';
   ctx.shadowColor = 'rgba(0,0,0,0.9)';
   ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 1;
-  lines.forEach((line, i) => {
-    ctx.fillText(line, node.x, startY + i * lineHeight, r * 2);
-  });
+  lines.forEach((line, i) => { ctx.fillText(line, node.x, labelY + i * lineHeight, r * 3); });
 
-  // White text on top with color glow
   ctx.shadowColor = `rgba(${cr},${cg},${cb},0.9)`;
   ctx.shadowBlur = 8;
-  ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
   ctx.fillStyle = '#fff';
-  lines.forEach((line, i) => {
-    ctx.fillText(line, node.x, startY + i * lineHeight, r * 2);
-  });
+  lines.forEach((line, i) => { ctx.fillText(line, node.x, labelY + i * lineHeight, r * 3); });
   ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
 }

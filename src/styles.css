@@ -34,6 +34,18 @@ html, body {
   margin: 0 auto;
   overflow: hidden;
 }
+/* Dark gradient pinned to bottom of phone frame — above all screens */
+.phone-frame::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18%;
+  background: linear-gradient(to top, rgba(4,1,15,1) 0%, rgba(4,1,15,0.6) 40%, transparent 100%);
+  z-index: 50;
+  pointer-events: none;
+}
 @media (min-width: 500px) {
   body {
     display: flex;
@@ -278,6 +290,8 @@ html, body {
   background-size: contain;
   animation: hero-drift 15s ease-in-out infinite alternate;
   z-index: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 75%, transparent 95%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 75%, transparent 95%);
 }
 @keyframes hero-drift {
   0%   { transform: scale(1.02) translate(0, 0); }

@@ -412,9 +412,9 @@ async function playIntro() {
   if (introSkipped) return;
   avatar.classList.remove('talking');
 
-  // Show Continue button — user must tap to proceed
-  skipBtn.classList.add('visible');
-  // Do NOT auto-advance — wait for user to click Continue
+  // Pause a few beats then auto-advance to gameplay
+  await new Promise(r => setTimeout(r, 1500));
+  if (!introSkipped) skipToGame();
 }
 
 // ── Button handlers ────────────────────────────────────────────────
