@@ -408,7 +408,7 @@ async function playIntro() {
   if (introSkipped) return;
   await typewrite(line2, 'across multiple systems.');
   if (introSkipped) return;
-  await typewrite(line3, 'Untangle the web to see the pattern.');
+  await typewrite(line3, 'Untangle the web to find it.');
   if (introSkipped) return;
   avatar.classList.remove('talking');
 
