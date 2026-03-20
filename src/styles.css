@@ -152,7 +152,7 @@ html, body {
   z-index: 2;
 }
 .bg-starman-static.visible {
-  opacity: 0.9;
+  opacity: 0.55;
 }
 .bg-starman-video {
   z-index: 3;

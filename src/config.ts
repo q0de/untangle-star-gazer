@@ -59,12 +59,12 @@ export const NODE_DRAG_RADIUS = 27;
 // ── Solved body-mapped positions (normalized 0–1, scaled to canvas at runtime) ──
 // Calibrated to starman_black.png at: left:-75, top:16, 525x783 on 375x812 viewport
 export const BODY_POSITIONS: Record<string, { x: number; y: number }> = {
-  'center':     { x: 0.48, y: 0.40 },  // torso center (solar plexus)
-  'hands-feet': { x: 0.48, y: 0.70 },  // lower legs / knees area
-  'chest':      { x: 0.48, y: 0.28 },  // upper chest / heart
-  'limbs':      { x: 0.18, y: 0.48 },  // left arm / elbow area
-  'gut':        { x: 0.78, y: 0.46 },  // right side abdomen
-  'kidneys':    { x: 0.48, y: 0.55 },  // lower abdomen / kidneys
+  'center':     { x: 0.45, y: 0.42 },  // torso center (solar plexus)
+  'hands-feet': { x: 0.45, y: 0.68 },  // lower legs area
+  'chest':      { x: 0.45, y: 0.30 },  // upper chest / heart
+  'limbs':      { x: 0.20, y: 0.50 },  // left arm area
+  'gut':        { x: 0.70, y: 0.50 },  // right abdomen (pulled in from edge)
+  'kidneys':    { x: 0.45, y: 0.56 },  // lower abdomen
 };
 
 // ── Tangled start positions (guaranteed crossings) ─────────────────
