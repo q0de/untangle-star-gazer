@@ -428,6 +428,13 @@ btnReshuffle.addEventListener('click', () => {
 
 btnReplay.addEventListener('click', () => playIntro());
 
+// ── Debug: press S to toggle starman visibility ────────────────────
+window.addEventListener('keydown', (e) => {
+  if (e.key === 's' || e.key === 'S') {
+    starmanStatic.classList.toggle('visible');
+  }
+});
+
 // ── Resize handling ────────────────────────────────────────────────
 window.addEventListener('resize', () => {
   if (currentScreen === 'gameplay' && state) {
